@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Dosen - Sistem Absensi</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.875rem;
+            width: auto;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <h2>Panel Dosen</h2>
+            <div>
+                <span style="margin-right: 1rem;">Halo, <strong>{{ current_user.nama | default('Dosen')
+                        }}</strong></span>
+                <a href="/logout" class="btn btn-outline" style="padding: 0.5rem 1rem; width: auto;">Logout</a>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="card" style="max-width: 100%;">
+                <h3 class="card-title" style="text-align: left;">Buka Sesi Absensi</h3>
+                <form action="/admin/create_session" method="POST" class="mt-4">
+                    <div class="form-group">
+                        <label class="form-label" for="mata_kuliah">Mata Kuliah</label>
+                        <input type="text" id="mata_kuliah" name="mata_kuliah" class="form-control" required
+                            placeholder="Contoh: Basis Data">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="mode">Mode Kelas</label>
+                        <select id="mode" name="mode" class="form-control" required>
+                            <option value="offline">Offline (Tatap Muka)</option>
+                            <option value="online">Online (Daring)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label class="form-label" for="jam_mulai">Jam Mulai</label>
+                            <input type="time" id="jam_mulai" name="jam_mulai" class="form-control" required>
+                        </div>
+                        <div>
+                            <label class="form-label" for="jam_selesai">Jam Selesai</label>
+                            <input type="time" id="jam_selesai" name="jam_selesai" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-4">Buat Sesi & Generate QR</button>
+                </form>
+            </div>
+
+            <div class="card" style="max-width: 100%;">
+                <h3 class="card-title" style="text-align: left;">Manajemen Sesi</h3>
+                <p class="card-subtitle" style="text-align: left;">Daftar sesi absensi hari ini</p>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mata Kuliah</th>
+                                <th>Waktu</th>
+                                <th>Mode</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if sessions %}
+                            {% for s in sessions %}
+                            <tr>
+                                <td>{{ s.mata_kuliah }}</td>
+                                <td>{{ s.jam_mulai.strftime('%H:%M') }} - {{ s.jam_selesai.strftime('%H:%M') }}</td>
+                                <td>{{ s.mode|capitalize }}</td>
+                                <td>
+                                    <span class="{{ 'status-active' if s.status else 'status-finished' }}">
+                                        {{ 'Aktif' if s.status else 'Selesai' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('session.session_detail', session_id=s.id) }}"
+                                        class="btn btn-outline btn-sm">Lihat Kehadiran</a>
+                                    <a href="{{ url_for('qr.display_qr', session_id=s.id) }}" target="_blank"
+                                        class="btn btn-outline btn-sm">Tampilkan QR</a>
+                                    <form action="{{ url_for('session.close_session', session_id=s.id) }}" method="post"
+                                        style="display:inline">
+                                        {% if s.status %}
+                                        <button class="btn btn-primary btn-sm"
+                                            style="background-color: #dc2626; border:none;" type="submit">Tutup</button>
+                                        {% else %}
+                                        <button class="btn btn-outline btn-sm" type="button" disabled>Tutup</button>
+                                        {% endif %}
+                                    </form>
+                                    <form action="{{ url_for('session.delete_session', session_id=s.id) }}"
+                                        method="post" style="display:inline"
+                                        onsubmit="return confirm('Yakin ingin menghapus sesi ini?');">
+                                        <button class="btn btn-outline btn-sm" type="submit">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 1rem;">Tidak ada sesi hari ini.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

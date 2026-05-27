@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Kehadiran - {{ session.mata_kuliah }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div>
+                <h2>{{ session.mata_kuliah }}</h2>
+                <p class="text-muted">Tanggal: {{ session.tanggal }} | Mode: <strong>{{ session.mode.upper() }}</strong>
+                </p>
+            </div>
+            <a href="/admin" class="btn btn-outline" style="width: auto;">Kembali ke Panel</a>
+        </div>
+
+        <div class="card" style="max-width: 100%;">
+            <h3 class="card-title" style="text-align: left;">Daftar Mahasiswa Hadir (Total: {{ attendance_list|length
+                }})</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Waktu Absen</th>
+                        <th>Nama Mahasiswa</th>
+                        <th>Email/NIM</th>
+                        <th>Status</th>
+                        <th>Log Validasi (GPS/Token)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance, user in attendance_list %}
+                    <tr>
+                        <td>{{ attendance.waktu_absen.strftime('%H:%M:%S') }} WIB</td>
+                        <td><strong>{{ user.nama }}</strong></td>
+                        <td>{{ user.email }}</td>
+                        <td><span class="badge-success">{{ attendance.status_kehadiran.upper() }}</span></td>
+                        <td><small class="text-muted">{{ attendance.lokasi or 'N/A' }}</small></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted" style="padding: 2rem;">Belum ada mahasiswa yang
+                            melakukan absensi pada sesi ini.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>

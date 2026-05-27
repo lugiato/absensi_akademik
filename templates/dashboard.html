@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Mahasiswa - Sistem Absensi</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        /* Tambahan CSS khusus Dashboard */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .bg-green {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .bg-red {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <h2>Portal Akademik</h2>
+            <div>
+                <span style="margin-right: 1rem;">Halo, <strong>{{ current_user.nama | default('Mahasiswa')
+                        }}</strong></span>
+                <a href="/logout" class="btn btn-outline" style="padding: 0.5rem 1rem; width: auto;">Logout</a>
+            </div>
+        </div>
+
+        <div class="grid-layout">
+            <div class="card" style="max-width: 100%;">
+                <h3 class="card-title" style="text-align: left;">Sesi Saat Ini</h3>
+                <p class="card-subtitle" style="text-align: left;">Sesi absensi yang sedang berjalan</p>
+
+                {% if active_session %}
+                <div
+                    style="background-color: #eff6ff; border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <h4 style="margin-bottom: 0.5rem;">{{ active_session.mata_kuliah }}</h4>
+                    <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.5rem;">Mode:
+                        <strong>{{ active_session.mode|capitalize }}</strong> | Waktu: {{
+                        active_session.jam_mulai.strftime('%H:%M') }} - {{ active_session.jam_selesai.strftime('%H:%M')
+                        }} WIB
+                    </p>
+                    <a href="/attendance" class="btn btn-primary" style="margin-top: 0.5rem;">Mulai Absensi</a>
+                </div>
+                {% else %}
+                <div
+                    style="background-color: #f8fafc; border-left: 4px solid #94a3b8; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                    <p class="text-muted" style="font-size: 0.95rem; margin-bottom: 0.5rem;">Tidak ada sesi absensi
+                        aktif saat ini.</p>
+                    <a href="/attendance" class="btn btn-outline" style="margin-top: 0.5rem;">Cek Absensi</a>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <div class="card" style="max-width: 100%;">
+                <h3 class="card-title" style="text-align: left;">Riwayat Kehadiran</h3>
+                <p class="card-subtitle" style="text-align: left;">Rekap absensi terbaru</p>
+
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Mata Kuliah</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if attendance_history %}
+                            {% for attendance in attendance_history %}
+                            <tr>
+                                <td>{{ attendance.waktu_absen.strftime('%d %B %Y') }}</td>
+                                <td>{{ attendance.session_ref.mata_kuliah }}</td>
+                                <td>
+                                    <span
+                                        class="badge {{ 'bg-green' if attendance.status_kehadiran == 'hadir' else 'bg-red' }}">
+                                        {{ attendance.status_kehadiran|capitalize }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">Belum ada riwayat kehadiran.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="/attendance/history" class="btn btn-outline mt-4">Lihat Semua Riwayat</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

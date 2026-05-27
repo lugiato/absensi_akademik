@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Kelas - Sistem Absensi Hybrid</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+
+<body>
+    <div class="container text-center mt-4">
+        <h2>Sistem Absensi: {{ session.mata_kuliah if session else 'Tidak ada sesi aktif' }}</h2>
+        {% if session %}
+        <p class="text-muted">{{ session.tanggal.strftime('%d %B %Y') }} | {{ session.jam_mulai.strftime('%H:%M') }} -
+            {{ session.jam_selesai.strftime('%H:%M') }} WIB</p>
+        <p class="text-muted">Mode aktif: <strong>{{ session.mode|capitalize }}</strong></p>
+        {% else %}
+        <p class="text-muted">Tidak ada sesi absensi aktif saat ini.</p>
+        {% endif %}
+    </div>
+
+    {% if session %}
+    <div class="center-layout" style="min-height: 70vh;">
+        <div class="card" style="max-width: 500px;">
+            <h3 class="card-title">Pilih Mode Absensi</h3>
+
+            <div id="mode-selection" class="mt-4">
+                {% if session.mode == 'offline' %}
+                <button onclick="showOfflineMode()" class="btn btn-primary mb-4">📍 Mode Offline (Scan QR
+                    Kelas)</button>
+                {% elif session.mode == 'online' %}
+                <button onclick="showOnlineMode()" class="btn btn-outline">💻 Mode Online (Upload QR)</button>
+                {% else %}
+                <button onclick="showOfflineMode()" class="btn btn-primary mb-4">📍 Mode Offline</button>
+                <button onclick="showOnlineMode()" class="btn btn-outline">💻 Mode Online</button>
+                {% endif %}
+            </div>
+
+            <div id="offline-area" class="hidden mt-4">
+                <div id="status-gps" class="mb-4 text-center">
+                    <p>Memeriksa lokasi Anda...</p>
+                </div>
+                <form action="/absen/offline" method="POST" id="form-offline">
+                    <input type="hidden" name="session_id" value="{{ session.id }}">
+                    <input type="hidden" name="latitude" id="lat">
+                    <input type="hidden" name="longitude" id="lng">
+                    <div data-placeholder
+                        style="width: 100%; height: 200px; background-color: #e5e7eb; border-radius: 8px; display:flex; align-items:center; justify-content:center; margin-bottom: 1rem;">
+                        [Area Kamera Scanner]
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="resetView()">Kembali</button>
+                </form>
+            </div>
+
+            <div id="online-area" class="hidden mt-4">
+                <form action="/absen/online" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="session_id" value="{{ session.id }}">
+                    <div class="form-group">
+                        <label class="form-label" for="qr_image">Unggah Screenshot QR Code</label>
+                        <input type="file" id="qr_image" name="qr_image" class="form-control" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-4">Kirim Bukti Absensi</button>
+                    <button type="button" class="btn btn-outline" onclick="resetView()">Kembali</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="../static/js/script.js"></script>
+    <script>
+        // expose current session id for scanner
+        window.CURRENT_SESSION_ID = parseInt("{{ session.id }}");
+    </script>
+    <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+    <script src="../static/js/qr_scanner.js"></script>
+</body>
+
+</html>

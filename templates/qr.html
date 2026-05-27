@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display QR Absensi</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        body {
+            background-color: #ffffff;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 3rem;
+        }
+
+        .qr-image {
+            width: 350px;
+            height: 350px;
+            border: 4px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 2rem auto;
+            background: white;
+        }
+
+        .course-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .timer-text {
+            font-size: 1.25rem;
+            color: #dc2626;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="qr-container">
+        <h1 class="course-title">{{ session.mata_kuliah if session else 'QR Absensi' }}</h1>
+        {% if session %}
+        <p style="font-size: 1.25rem; color: var(--text-muted);">Sesi {{ session.mode|capitalize }} | {{
+            session.tanggal.strftime('%d %B %Y') }} | {{ session.jam_mulai.strftime('%H:%M') }} - {{
+            session.jam_selesai.strftime('%H:%M') }}</p>
+
+        <div class="qr-image">
+            <img src="{{ url_for('qr.generate_qr_image', session_id=session.id) }}" alt="QR Absensi"
+                style="width: 100%; height: 100%;">
+        </div>
+
+        <p class="timer-text">QR code akan diperbarui dalam <span id="countdown">30</span> detik</p>
+        <p class="mt-4 text-muted">Silakan gunakan aplikasi untuk melakukan scan QR ini.</p>
+        {% else %}
+        <p style="font-size: 1rem; color: var(--text-muted);">Tidak ada sesi aktif untuk menampilkan QR.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        let timeLeft = 30; // Waktu refresh dalam detik (sesuai roadmap Anda: 30-60 detik)
+        const countdownEl = document.getElementById('countdown');
+
+        setInterval(() => {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+
+            if (timeLeft <= 0) {
+                // Refresh halaman untuk mendapatkan QR baru dari server
+                window.location.reload();
+                // Alternatif: Lakukan fetch/AJAX untuk memperbarui gambar tanpa mereload halaman
+            }
+        }, 1000);
+    </script>
+</body>
+
+</html>

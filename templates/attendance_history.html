@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Absensi - Sistem Absensi</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .bg-green {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .bg-red {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <div>
+                <h2>Riwayat Absensi</h2>
+                <p class="text-muted">Halo, <strong>{{ current_user.nama }}</strong></p>
+            </div>
+            <div>
+                <a href="/dashboard" class="btn btn-outline" style="width: auto;">Kembali ke Dashboard</a>
+            </div>
+        </div>
+
+        <div class="card" style="max-width: 100%;">
+            <h3 class="card-title" style="text-align: left;">Rekap Kehadiran</h3>
+            <p class="card-subtitle" style="text-align: left;">Daftar riwayat absensi Anda</p>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Mata Kuliah</th>
+                            <th>Waktu</th>
+                            <th>Status</th>
+                            <th>Metode</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if attendance_history %}
+                        {% for attendance in attendance_history %}
+                        <tr>
+                            <td>{{ attendance.waktu_absen.strftime('%d %B %Y') }}</td>
+                            <td>{{ attendance.session_ref.mata_kuliah }}</td>
+                            <td>{{ attendance.waktu_absen.strftime('%H:%M:%S') }}</td>
+                            <td>
+                                <span
+                                    class="badge {{ 'bg-green' if attendance.status_kehadiran == 'hadir' else 'bg-red' }}">
+                                    {{ attendance.status_kehadiran|capitalize }}
+                                </span>
+                            </td>
+                            <td>{{ attendance.lokasi.replace('_', ' ') if attendance.lokasi else 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted" style="padding: 2rem;">Belum ada riwayat
+                                absensi.</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
