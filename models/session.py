@@ -18,7 +18,7 @@ class Session(db.Model):
     radius = db.Column(db.Integer, default=50) # Toleransi jarak dalam meter
 
     # Relasi 1-ke-Banyak (1 Sesi -> Banyak Attendance)
-    attendances = db.relationship('Attendance', backref='session_ref', lazy=True)
+    attendances = db.relationship('Attendance', backref='session_ref', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"<Session {self.mata_kuliah} - {self.tanggal}>"

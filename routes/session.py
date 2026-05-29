@@ -88,9 +88,16 @@ def delete_session(session_id):
         return redirect(url_for('session.admin_panel'))
 
     session_data = Session.query.get_or_404(session_id)
-    db.session.delete(session_data)
-    db.session.commit()
-    flash(f"Sesi {session_data.mata_kuliah} telah dihapus.", "success")
+
+    try:
+        Attendance.query.filter_by(session_id=session_data.id).delete(synchronize_session=False)
+        db.session.delete(session_data)
+        db.session.commit()
+        flash(f"Sesi {session_data.mata_kuliah} telah dihapus.", "success")
+    except Exception:
+        db.session.rollback()
+        flash("Gagal menghapus sesi karena data terkait. Silakan coba lagi.", "danger")
+
     return redirect(url_for('session.admin_panel'))
 
 

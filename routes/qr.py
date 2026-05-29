@@ -5,6 +5,7 @@ import qrcode
 import io
 import time
 import hashlib
+from pathlib import Path
 
 # Import Session model from models package
 from models.session import Session
@@ -36,6 +37,16 @@ def display_qr(session_id):
     return render_template('qr.html', session=session_data)
 
 
+def save_qr_image(img, session_id, prefix='generated'):
+    project_root = Path(__file__).resolve().parents[1]
+    qr_dir = project_root / 'static' / 'qr'
+    qr_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{prefix}_{session_id}_{time.time_ns()}.png"
+    file_path = qr_dir / filename
+    img.save(file_path, 'PNG')
+    return str(file_path)
+
+
 @qr_bp.route('/qr/generate/<int:session_id>')
 @login_required
 def generate_qr_image(session_id):
@@ -58,6 +69,7 @@ def generate_qr_image(session_id):
     qr.make(fit=True)
     
     img = qr.make_image(fill_color="black", back_color="white")
+    save_qr_image(img, session_id, prefix='generated')
     
     # Simpan gambar ke memori sementara (BytesIO) agar tidak membebani penyimpanan server
     img_io = io.BytesIO()

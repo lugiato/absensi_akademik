@@ -51,21 +51,33 @@ def create_app():
 
 def seed_default_users(app):
     with app.app_context():
-        if User.query.count() == 0:
-            mahasiswa = User(
-                nama='Mahasiswa Default',
-                email='mahasiswa@example.com',
-                password_hash=generate_password_hash('mahasiswa123'),
-                role='mahasiswa'
+        default_users = {
+            'mahasiswa@example.com': {
+                'nama': 'Mahasiswa Default',
+                'password': 'mahasiswa123',
+                'role': 'mahasiswa'
+            },
+            'dosen@example.com': {
+                'nama': 'Dosen Default',
+                'password': 'dosen123',
+                'role': 'dosen'
+            }
+        }
+
+        for email, user_data in default_users.items():
+            existing = User.query.filter_by(email=email).first()
+            if existing:
+                continue
+
+            new_user = User(
+                nama=user_data['nama'],
+                email=email,
+                password_hash=generate_password_hash(user_data['password']),
+                role=user_data['role']
             )
-            dosen = User(
-                nama='Dosen Default',
-                email='dosen@example.com',
-                password_hash=generate_password_hash('dosen123'),
-                role='dosen'
-            )
-            db.session.add(mahasiswa)
-            db.session.add(dosen)
+            db.session.add(new_user)
+
+        if db.session.new:
             db.session.commit()
             print('Default users ditambahkan: mahasiswa@example.com / dosen@example.com')
 

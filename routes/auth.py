@@ -1,5 +1,5 @@
 # routes/auth.py
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -25,6 +25,8 @@ def login():
 
         # Validasi user dan password
         if user and check_password_hash(user.password_hash, password):
+            session.clear()
+            session.modified = True
             login_user(user)
             flash(f"Selamat datang kembali, {user.nama}!", "success")
             return redirect(url_for('auth.dashboard'))
@@ -36,16 +38,19 @@ def login():
 @auth_bp.route('/dashboard')
 @login_required
 def dashboard():
-    if current_user.role == 'dosen':
+    user = User.query.get_or_404(current_user.get_id())
+
+    if user.role == 'dosen':
         return redirect(url_for('session.admin_panel'))
 
     active_session = Session.query.filter_by(status=True).order_by(Session.tanggal.desc(), Session.jam_mulai.desc()).first()
-    attendance_history = Attendance.query.filter_by(user_id=current_user.id).order_by(Attendance.waktu_absen.desc()).limit(5).all()
+    attendance_history = Attendance.query.filter_by(user_id=user.id).order_by(Attendance.waktu_absen.desc()).limit(5).all()
     return render_template('dashboard.html', active_session=active_session, attendance_history=attendance_history)
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    flash("Anda telah berhasil keluar dari sistem.", "info")
+    session.clear()
+    session.modified = True
     return redirect(url_for('auth.login'))

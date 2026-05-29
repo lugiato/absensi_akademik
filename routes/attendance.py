@@ -13,6 +13,10 @@ from models.session import Session
 from models.attendance import Attendance
 import time
 import hashlib
+import qrcode
+
+
+import routes.qr
 
 attendance_bp = Blueprint('attendance', __name__)
 
@@ -42,6 +46,13 @@ def validate_qr_token(qr_data, session_data):
     return False
 
 
+def require_mahasiswa_or_redirect():
+    if current_user.role != 'mahasiswa':
+        flash("Akses ditolak! Hanya mahasiswa yang dapat melakukan absensi.", "danger")
+        return redirect(url_for('auth.dashboard'))
+    return None
+
+
 @attendance_bp.route('/attendance')
 @login_required
 def attendance_page():
@@ -56,6 +67,10 @@ def attendance_page():
 @attendance_bp.route('/absen/offline/<int:session_id>', methods=['POST'])
 @login_required
 def absen_offline(session_id=None):
+    redirect_response = require_mahasiswa_or_redirect()
+    if redirect_response:
+        return redirect_response
+
     session_data = get_active_session(session_id or request.form.get('session_id'))
     if not session_data:
         flash("Tidak ada sesi aktif untuk absen offline.", "danger")
@@ -102,6 +117,10 @@ def absen_offline(session_id=None):
 @attendance_bp.route('/absen/online/<int:session_id>', methods=['POST'])
 @login_required
 def absen_online(session_id=None):
+    redirect_response = require_mahasiswa_or_redirect()
+    if redirect_response:
+        return redirect_response
+
     session_data = get_active_session(session_id or request.form.get('session_id'))
     if not session_data:
         flash("Tidak ada sesi aktif untuk absen online.", "danger")
@@ -170,6 +189,9 @@ def attendance_history():
 @attendance_bp.route('/absen/scan', methods=['POST'])
 @login_required
 def absen_scan():
+    if current_user.role != 'mahasiswa':
+        return {"success": False, "message": "Akses ditolak. Hanya mahasiswa yang dapat melakukan absensi."}, 403
+
     # menerima JSON { token, session_id }
     try:
         data = request.get_json(force=True)
@@ -208,6 +230,12 @@ def absen_scan():
     existing = Attendance.query.filter_by(user_id=current_user.id, session_id=session_data.id).first()
     if existing:
         return {"success": False, "message": "Anda sudah melakukan absensi pada sesi ini."}, 409
+
+    qr_img = qrcode.QRCode(version=1, box_size=10, border=4)
+    qr_img.add_data(token)
+    qr_img.make(fit=True)
+    img = qr_img.make_image(fill_color="black", back_color="white")
+    routes.qr.save_qr_image(img, session_data.id, prefix='used')
 
     # Simpan ke DB
     new_attendance = Attendance(
