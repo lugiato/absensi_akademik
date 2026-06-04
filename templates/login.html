@@ -5,47 +5,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem Absensi Hybrid</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Menggunakan Phosphor Icons untuk modern icon -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
-    <div class="center-layout">
-        <div class="card">
-            <h1 class="card-title">Portal Absensi</h1>
-            <p class="card-subtitle">Silakan login untuk mengakses sistem</p>
+    <!-- Background Elements -->
+    <div style="position: absolute; top: -100px; left: -100px; width: 400px; height: 400px; background: var(--primary-light); border-radius: 50%; filter: blur(80px); z-index: -1;"></div>
+    <div style="position: absolute; bottom: -100px; right: -100px; width: 300px; height: 300px; background: rgba(139, 92, 246, 0.2); border-radius: 50%; filter: blur(60px); z-index: -1;"></div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
+    <div class="center-layout">
+        <div class="card fade-in">
+            <div class="text-center mb-4">
+                <i class="ph-fill ph-student" style="font-size: 3rem; color: var(--primary-color);"></i>
             </div>
-            {% endif %}
-            {% endwith %}
+            <h1 class="card-title">Portal Akademik</h1>
+            <p class="card-subtitle">Silakan masuk untuk melanjutkan ke sistem absensi</p>
+
+            <div class="flash-messages">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="ph ph-info" style="margin-right: 0.5rem; font-size: 1.25rem;"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
 
             <form id="login-form" action="/login" method="POST">
                 <div class="form-group">
                     <label class="form-label" for="email">Email Akademik</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="nim@mahasiswa.edu"
-                        required>
+                    <div style="position: relative;">
+                        <i class="ph ph-envelope-simple" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;"></i>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="user@institusi.edu" required style="padding-left: 2.75rem;">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="password">Password</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="********"
-                        required>
+                    <div style="position: relative;">
+                        <i class="ph ph-lock-key" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;"></i>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required style="padding-left: 2.75rem;">
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="role">Masuk Sebagai</label>
-                    <select id="role" name="role" class="form-control" required>
-                        <option value="mahasiswa">Mahasiswa</option>
-                        <option value="dosen">Dosen</option>
-                    </select>
+                    <div style="position: relative;">
+                        <i class="ph ph-users" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;"></i>
+                        <select id="role" name="role" class="form-control" required style="padding-left: 2.75rem;">
+                            <option value="mahasiswa">🎓 Mahasiswa</option>
+                            <option value="dosen">👨‍🏫 Dosen</option>
+                        </select>
+                    </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-4">Login</button>
+                <button type="submit" class="btn btn-primary mt-6">
+                    Masuk <i class="ph-bold ph-arrow-right"></i>
+                </button>
             </form>
         </div>
     </div>

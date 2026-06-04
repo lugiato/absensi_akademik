@@ -6,86 +6,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Kehadiran - {{ session.mata_kuliah }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 2rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th,
-        td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background-color: #d1fae5;
-            color: #065f46;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.875rem;
-        }
-    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
-    <div class="container">
-        <div class="navbar">
-            <div>
-                <h2>{{ session.mata_kuliah }}</h2>
-                <p class="text-muted">Tanggal: {{ session.tanggal }} | Mode: <strong>{{ session.mode.upper() }}</strong>
-                </p>
+    <div class="container fade-in">
+        <nav class="navbar">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-list-checks" style="font-size: 1.75rem; color: var(--primary-color);"></i>
+                <div>
+                    <h2 style="line-height: 1.2;">Detail Kehadiran</h2>
+                    <p class="text-muted" style="font-size: 0.85rem; font-weight: normal; background: none; -webkit-text-fill-color: var(--text-muted);">{{ session.mata_kuliah }}</p>
+                </div>
             </div>
-            <a href="/admin" class="btn btn-outline" style="width: auto;">Kembali ke Panel</a>
+            <div>
+                <a href="/admin" class="btn btn-outline btn-sm btn-auto">
+                    <i class="ph-bold ph-arrow-left"></i> Kembali ke Panel
+                </a>
+            </div>
+        </nav>
+
+        <!-- Session Summary Cards -->
+        <div class="grid-layout" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
+            <div class="card" style="padding: 1.5rem;">
+                <div class="text-muted mb-2 flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> Tanggal Sesi</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">{{ session.tanggal }}</div>
+            </div>
+            <div class="card" style="padding: 1.5rem;">
+                <div class="text-muted mb-2 flex items-center gap-1"><i class="ph-bold ph-broadcast"></i> Mode Sesi</div>
+                <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">{{ session.mode.upper() }}</div>
+            </div>
+            <div class="card" style="padding: 1.5rem; background: var(--success-bg); border-color: rgba(16, 185, 129, 0.2);">
+                <div class="text-muted mb-2 flex items-center gap-1" style="color: var(--success-color);"><i class="ph-bold ph-users"></i> Total Hadir</div>
+                <div style="font-size: 2rem; font-weight: 800; color: var(--success-color); line-height: 1;">{{ attendance_list|length }} <span style="font-size: 1rem; font-weight: 500;">Mahasiswa</span></div>
+            </div>
         </div>
 
-        <div class="card" style="max-width: 100%;">
-            <h3 class="card-title" style="text-align: left;">Daftar Mahasiswa Hadir (Total: {{ attendance_list|length
-                }})</h3>
+        <div class="card full-width">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="card-title" style="text-align: left; margin: 0;">Daftar Mahasiswa Hadir</h3>
+                <button class="btn btn-outline btn-sm btn-auto" onclick="window.print()">
+                    <i class="ph-bold ph-printer"></i> Cetak Laporan
+                </button>
+            </div>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Waktu Absen</th>
-                        <th>Nama Mahasiswa</th>
-                        <th>Email/NIM</th>
-                        <th>Status</th>
-                        <th>Log Validasi (GPS/Token)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attendance, user in attendance_list %}
-                    <tr>
-                        <td>{{ attendance.waktu_absen.strftime('%H:%M:%S') }} WIB</td>
-                        <td><strong>{{ user.nama }}</strong></td>
-                        <td>{{ user.email }}</td>
-                        <td><span class="badge-success">{{ attendance.status_kehadiran.upper() }}</span></td>
-                        <td><small class="text-muted">{{ attendance.lokasi or 'N/A' }}</small></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted" style="padding: 2rem;">Belum ada mahasiswa yang
-                            melakukan absensi pada sesi ini.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Waktu Absen</th>
+                            <th>Mahasiswa</th>
+                            <th>Status</th>
+                            <th>Log Validasi / Lokasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance, user in attendance_list %}
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-2" style="font-weight: 500; color: var(--text-main);">
+                                    <i class="ph-bold ph-clock text-muted"></i>
+                                    {{ attendance.waktu_absen.strftime('%H:%M:%S') }} WIB
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--primary-color); margin-bottom: 0.2rem;">{{ user.nama }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);"><i class="ph-fill ph-envelope-simple"></i> {{ user.email }}</div>
+                            </td>
+                            <td>
+                                <span class="badge bg-green" style="padding: 0.4rem 0.8rem;">
+                                    <i class="ph-bold ph-check-circle" style="margin-right: 0.3rem;"></i>
+                                    {{ attendance.status_kehadiran.upper() }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-1" style="font-size: 0.85rem; color: var(--text-muted); background: var(--bg-color); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); display: inline-flex;">
+                                    <i class="ph-fill ph-map-pin"></i> 
+                                    {{ attendance.lokasi or 'Sistem Validasi' }}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted" style="padding: 4rem 1rem;">
+                                <i class="ph-duotone ph-users" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+                                <p style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Belum ada data kehadiran</p>
+                                <p>Belum ada mahasiswa yang berhasil melakukan absensi pada sesi ini.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

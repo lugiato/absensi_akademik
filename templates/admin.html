@@ -5,85 +5,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Dosen - Sistem Absensi</title>
-    <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 2rem;
-        }
-
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 2rem;
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th,
-        td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-        }
-
-        .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.875rem;
-            width: auto;
-            display: inline-block;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
-    <div class="container">
-        <div class="navbar">
-            <h2>Panel Dosen</h2>
-            <div>
-                <span style="margin-right: 1rem;">Halo, <strong>{{ current_user.nama | default('Dosen')
-                        }}</strong></span>
-                <a href="/logout" class="btn btn-outline" style="padding: 0.5rem 1rem; width: auto;">Logout</a>
+    <div class="container fade-in">
+        <nav class="navbar">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-chalkboard-teacher" style="font-size: 1.75rem; color: var(--primary-color);"></i>
+                <h2>Panel Dosen</h2>
             </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div
+                        style="width: 36px; height: 36px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-weight: bold;">
+                        {{ current_user.nama[0]|upper if current_user.nama else 'D' }}
+                    </div>
+                    <span class="hidden" style="display: block;">
+                        Halo, <strong>{{ current_user.nama | default('Dosen') }}</strong>
+                    </span>
+                </div>
+                <a href="/logout" class="btn btn-outline btn-sm">
+                    <i class="ph-bold ph-sign-out"></i> Logout
+                </a>
+            </div>
+        </nav>
+
+        <!-- Flash messages for session creation/deletion -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <i class="ph ph-info" style="margin-right: 0.5rem; font-size: 1.25rem;"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
         </div>
 
         <div class="grid-layout">
-            <div class="card" style="max-width: 100%;">
-                <h3 class="card-title" style="text-align: left;">Buka Sesi Absensi</h3>
+            <!-- Kiri: Buat Sesi -->
+            <div class="card full-width" style="align-self: start;">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="ph-fill ph-plus-circle" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+                    <h3 class="card-title" style="margin: 0;">Buka Sesi Absensi</h3>
+                </div>
+                <p class="card-subtitle">Buat sesi baru untuk mengizinkan mahasiswa absen</p>
+
                 <form action="/admin/create_session" method="POST" class="mt-4">
                     <div class="form-group">
                         <label class="form-label" for="mata_kuliah">Mata Kuliah</label>
-                        <input type="text" id="mata_kuliah" name="mata_kuliah" class="form-control" required
-                            placeholder="Contoh: Basis Data">
+                        <div style="position: relative;">
+                            <i class="ph ph-book-open"
+                                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;"></i>
+                            <input type="text" id="mata_kuliah" name="mata_kuliah" class="form-control" required
+                                placeholder="Contoh: Pemrograman Web Lanjut" style="padding-left: 2.75rem;">
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label" for="mode">Mode Kelas</label>
-                        <select id="mode" name="mode" class="form-control" required>
-                            <option value="offline">Offline (Tatap Muka)</option>
-                            <option value="online">Online (Daring)</option>
-                        </select>
+                        <div style="position: relative;">
+                            <i class="ph ph-desktop"
+                                style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;"></i>
+                            <select id="mode" name="mode" class="form-control" required style="padding-left: 2.75rem;">
+                                <option value="offline">📍 Offline (Tatap Muka & QR Kelas)</option>
+                                <option value="online">💻 Online (Daring & Upload QR)</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group flex gap-4" style="display: grid; grid-template-columns: 1fr 1fr;">
                         <div>
                             <label class="form-label" for="jam_mulai">Jam Mulai</label>
                             <input type="time" id="jam_mulai" name="jam_mulai" class="form-control" required>
@@ -94,62 +89,101 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary mt-4">Buat Sesi & Generate QR</button>
+                    <button type="submit" class="btn btn-primary mt-4">
+                        Buat Sesi & Generate QR <i class="ph-bold ph-qr-code"></i>
+                    </button>
                 </form>
             </div>
 
-            <div class="card" style="max-width: 100%;">
-                <h3 class="card-title" style="text-align: left;">Manajemen Sesi</h3>
-                <p class="card-subtitle" style="text-align: left;">Daftar sesi absensi hari ini</p>
+            <!-- Kanan: Manajemen Sesi -->
+            <div class="card full-width">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="ph-fill ph-kanban" style="font-size: 1.5rem; color: var(--secondary-color);"></i>
+                    <h3 class="card-title" style="margin: 0;">Manajemen Sesi</h3>
+                </div>
+                <p class="card-subtitle">Daftar sesi absensi Anda hari ini</p>
 
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Mata Kuliah</th>
-                                <th>Waktu</th>
+                                <th>Mata Kuliah / Waktu</th>
                                 <th>Mode</th>
                                 <th>Status</th>
-                                <th>Aksi</th>
+                                <th style="text-align: right;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% if sessions %}
                             {% for s in sessions %}
                             <tr>
-                                <td>{{ s.mata_kuliah }}</td>
-                                <td>{{ s.jam_mulai.strftime('%H:%M') }} - {{ s.jam_selesai.strftime('%H:%M') }}</td>
-                                <td>{{ s.mode|capitalize }}</td>
                                 <td>
-                                    <span class="{{ 'status-active' if s.status else 'status-finished' }}">
-                                        {{ 'Aktif' if s.status else 'Selesai' }}
+                                    <div style="font-weight: 600; color: var(--text-main); margin-bottom: 0.25rem;">{{
+                                        s.mata_kuliah }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);"
+                                        class="flex items-center gap-1">
+                                        <i class="ph ph-clock"></i> {{ s.jam_mulai.strftime('%H:%M') }} - {{
+                                        s.jam_selesai.strftime('%H:%M') }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge"
+                                        style="background: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-muted);">
+                                        {{ s.mode|capitalize }}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('session.session_detail', session_id=s.id) }}"
-                                        class="btn btn-outline btn-sm">Lihat Kehadiran</a>
-                                    <a href="{{ url_for('qr.display_qr', session_id=s.id) }}" target="_blank"
-                                        class="btn btn-outline btn-sm">Tampilkan QR</a>
-                                    <form action="{{ url_for('session.close_session', session_id=s.id) }}" method="post"
-                                        style="display:inline">
-                                        {% if s.status %}
-                                        <button class="btn btn-primary btn-sm"
-                                            style="background-color: #dc2626; border:none;" type="submit">Tutup</button>
-                                        {% else %}
-                                        <button class="btn btn-outline btn-sm" type="button" disabled>Tutup</button>
-                                        {% endif %}
-                                    </form>
-                                    <form action="{{ url_for('session.delete_session', session_id=s.id) }}"
-                                        method="post" style="display:inline"
-                                        onsubmit="return confirm('Yakin ingin menghapus sesi ini?');">
-                                        <button class="btn btn-outline btn-sm" type="submit">Hapus</button>
-                                    </form>
+                                    {% if s.status %}
+                                    <span class="badge bg-green" style="display: flex; gap: 0.25rem;"><span
+                                            class="status-indicator"
+                                            style="width: 6px; height: 6px; margin: 0; align-self: center;"></span>
+                                        Aktif</span>
+                                    {% else %}
+                                    <span class="badge"
+                                        style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1;">Selesai</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    <div class="flex items-center gap-2" style="justify-content: flex-end;">
+                                        <a href="{{ url_for('session.session_detail', session_id=s.id) }}"
+                                            class="btn btn-outline btn-sm btn-auto" title="Detail Kehadiran">
+                                            <i class="ph-bold ph-list-magnifying-glass"></i>
+                                        </a>
+                                        <a href="{{ url_for('qr.display_qr', session_id=s.id) }}" target="_blank"
+                                            class="btn btn-outline btn-sm btn-auto" title="Tampilkan QR">
+                                            <i class="ph-bold ph-qr-code"></i>
+                                        </a>
+
+                                        <form action="{{ url_for('session.close_session', session_id=s.id) }}"
+                                            method="post" style="margin: 0;">
+                                            <button
+                                                class="btn btn-sm btn-auto {{ 'btn-danger' if s.status else 'btn-outline' }}"
+                                                type="{{ 'submit' if s.status else 'button' }}" {{ 'disabled' if not
+                                                s.status else '' }} title="Tutup Sesi"
+                                                style="padding: 0.5rem; min-width: 36px;">
+                                                <i class="ph-bold ph-stop-circle"></i>
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ url_for('session.delete_session', session_id=s.id) }}"
+                                            method="post" style="margin: 0;"
+                                            onsubmit="return confirm('Yakin ingin menghapus sesi ini? Semua data absensi terkait akan hilang.');">
+                                            <button class="btn btn-sm btn-outline btn-auto" type="submit" title="Hapus"
+                                                style="padding: 0.5rem; color: var(--danger-color); border-color: rgba(239, 68, 68, 0.3); min-width: 36px;">
+                                                <i class="ph-bold ph-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
                             {% else %}
                             <tr>
-                                <td colspan="5" style="text-align: center; padding: 1rem;">Tidak ada sesi hari ini.</td>
+                                <td colspan="4" class="text-center text-muted" style="padding: 3rem 1rem;">
+                                    <i class="ph-duotone ph-chalkboard"
+                                        style="font-size: 2.5rem; opacity: 0.5; margin-bottom: 0.5rem;"></i>
+                                    <br>Tidak ada sesi hari ini.
+                                </td>
                             </tr>
                             {% endif %}
                         </tbody>
@@ -159,4 +193,5 @@
         </div>
     </div>
 </body>
+
 </html>

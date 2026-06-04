@@ -5,79 +5,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Display QR Absensi</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         body {
-            background-color: #ffffff;
+            background-color: var(--primary-color);
+            background-image: radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.8) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.4) 0px, transparent 50%);
+            display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
         }
 
-        .qr-container {
+        .qr-card-container {
             text-align: center;
-            max-width: 600px;
-            padding: 3rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 4rem;
+            border-radius: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
         }
 
-        .qr-image {
-            width: 350px;
-            height: 350px;
-            border: 4px solid var(--primary-color);
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 2rem auto;
+        .qr-image-wrapper {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 3rem auto;
+            padding: 1.5rem;
             background: white;
+            border-radius: 1.5rem;
+            box-shadow: inset 0 0 0 4px var(--primary-light), 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Scanline animation for sci-fi feel */
+        .qr-image-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-color);
+            box-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            opacity: 0.8;
+            animation: scanline 3s linear infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes scanline {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
 
         .course-title {
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 3rem;
+            font-weight: 800;
             color: var(--text-main);
             margin-bottom: 0.5rem;
+            letter-spacing: -0.05em;
         }
 
         .timer-text {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
             font-size: 1.25rem;
-            color: #dc2626;
+            color: var(--text-main);
+            background: var(--danger-bg);
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
             font-weight: 600;
+            margin-top: 1rem;
+            border: 2px solid rgba(239, 68, 68, 0.2);
+        }
+        
+        .timer-text #countdown {
+            color: var(--danger-color);
+            font-size: 1.5rem;
+            font-weight: 800;
+            width: 2.5rem;
         }
     </style>
 </head>
 
 <body>
-    <div class="qr-container">
-        <h1 class="course-title">{{ session.mata_kuliah if session else 'QR Absensi' }}</h1>
+    <div class="qr-card-container">
         {% if session %}
-        <p style="font-size: 1.25rem; color: var(--text-muted);">Sesi {{ session.mode|capitalize }} | {{
-            session.tanggal.strftime('%d %B %Y') }} | {{ session.jam_mulai.strftime('%H:%M') }} - {{
-            session.jam_selesai.strftime('%H:%M') }}</p>
+        <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-light); color: var(--primary-color); padding: 0.5rem 1rem; border-radius: 999px; font-weight: 700; margin-bottom: 1rem;">
+            <i class="ph-fill ph-broadcast"></i> SESI AKTIF
+        </div>
+        
+        <h1 class="course-title">{{ session.mata_kuliah }}</h1>
+        <p style="font-size: 1.25rem; color: var(--text-muted); display: flex; justify-content: center; align-items: center; gap: 1rem;">
+            <span class="flex items-center gap-1"><i class="ph-bold ph-calendar-blank"></i> {{ session.tanggal.strftime('%d %B %Y') }}</span>
+            <span style="color: var(--border-color);">|</span>
+            <span class="flex items-center gap-1"><i class="ph-bold ph-clock"></i> {{ session.jam_mulai.strftime('%H:%M') }} - {{ session.jam_selesai.strftime('%H:%M') }}</span>
+        </p>
 
-        <div class="qr-image">
-            <img src="{{ url_for('qr.generate_qr_image', session_id=session.id) }}" alt="QR Absensi"
-                style="width: 100%; height: 100%;">
+        <div class="qr-image-wrapper">
+            <img src="{{ url_for('qr.generate_qr_image', session_id=session.id) }}" alt="QR Absensi" style="width: 100%; height: 100%; object-fit: contain; border-radius: 0.5rem;">
         </div>
 
-        <p class="timer-text">QR code akan diperbarui dalam <span id="countdown">30</span> detik</p>
-        <p class="mt-4 text-muted">Silakan gunakan aplikasi untuk melakukan scan QR ini.</p>
+        <div class="timer-text">
+            <i class="ph-bold ph-arrows-clockwise" style="animation: spin 2s linear infinite;"></i>
+            QR code diperbarui dalam <span id="countdown">30</span> detik
+        </div>
+        
+        <p class="mt-6 text-muted" style="font-size: 1.1rem;">
+            <i class="ph-duotone ph-scan"></i> Buka aplikasi absensi mahasiswa dan scan QR Code ini
+        </p>
         {% else %}
-        <p style="font-size: 1rem; color: var(--text-muted);">Tidak ada sesi aktif untuk menampilkan QR.</p>
+        <div style="padding: 4rem 2rem;">
+            <i class="ph-duotone ph-warning-circle" style="font-size: 5rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+            <h1 class="course-title" style="font-size: 2.5rem;">Tidak Ada Sesi Aktif</h1>
+            <p style="font-size: 1.25rem; color: var(--text-muted); margin-top: 1rem;">Silakan buka sesi absensi terlebih dahulu melalui Panel Dosen.</p>
+        </div>
         {% endif %}
     </div>
 
     <script>
-        let timeLeft = 30; // Waktu refresh dalam detik (sesuai roadmap Anda: 30-60 detik)
+        let timeLeft = 30; // Waktu refresh dalam detik
         const countdownEl = document.getElementById('countdown');
 
-        setInterval(() => {
-            timeLeft--;
-            countdownEl.textContent = timeLeft;
+        if (countdownEl) {
+            setInterval(() => {
+                timeLeft--;
+                countdownEl.textContent = timeLeft;
 
-            if (timeLeft <= 0) {
-                // Refresh halaman untuk mendapatkan QR baru dari server
-                window.location.reload();
-                // Alternatif: Lakukan fetch/AJAX untuk memperbarui gambar tanpa mereload halaman
-            }
-        }, 1000);
+                if (timeLeft <= 0) {
+                    // Refresh halaman untuk mendapatkan QR baru dari server
+                    window.location.reload();
+                }
+            }, 1000);
+        }
     </script>
 </body>
 

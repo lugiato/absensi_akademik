@@ -5,107 +5,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Absensi - Sistem Absensi</title>
-    <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 2rem;
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th,
-        td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-        }
-
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .bg-green {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .bg-red {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
-    <div class="container">
-        <div class="navbar">
-            <div>
-                <h2>Riwayat Absensi</h2>
-                <p class="text-muted">Halo, <strong>{{ current_user.nama }}</strong></p>
+    <div class="container fade-in">
+        <nav class="navbar">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-clock-counter-clockwise" style="font-size: 1.75rem; color: var(--primary-color);"></i>
+                <div>
+                    <h2 style="line-height: 1.2;">Riwayat Absensi</h2>
+                    <p class="text-muted" style="font-size: 0.85rem; font-weight: normal; background: none; -webkit-text-fill-color: var(--text-muted);">Mahasiswa: {{ current_user.nama }}</p>
+                </div>
             </div>
             <div>
-                <a href="/dashboard" class="btn btn-outline" style="width: auto;">Kembali ke Dashboard</a>
+                <a href="/dashboard" class="btn btn-outline btn-sm btn-auto">
+                    <i class="ph-bold ph-arrow-left"></i> Dashboard
+                </a>
             </div>
-        </div>
+        </nav>
 
-        <div class="card" style="max-width: 100%;">
-            <h3 class="card-title" style="text-align: left;">Rekap Kehadiran</h3>
-            <p class="card-subtitle" style="text-align: left;">Daftar riwayat absensi Anda</p>
+        <div class="card full-width">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="card-title" style="text-align: left; margin-bottom: 0;">Rekap Keseluruhan</h3>
+                    <p class="card-subtitle" style="text-align: left; margin-bottom: 0;">Semua riwayat absensi yang tercatat di sistem</p>
+                </div>
+                <div class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    Total: {{ attendance_history|length }} Sesi
+                </div>
+            </div>
 
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>Tanggal</th>
+                            <th>Tanggal & Waktu</th>
                             <th>Mata Kuliah</th>
-                            <th>Waktu</th>
-                            <th>Status</th>
-                            <th>Metode</th>
+                            <th>Status Kehadiran</th>
+                            <th>Metode / Log Lokasi</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% if attendance_history %}
-                        {% for attendance in attendance_history %}
-                        <tr>
-                            <td>{{ attendance.waktu_absen.strftime('%d %B %Y') }}</td>
-                            <td>{{ attendance.session_ref.mata_kuliah }}</td>
-                            <td>{{ attendance.waktu_absen.strftime('%H:%M:%S') }}</td>
-                            <td>
-                                <span
-                                    class="badge {{ 'bg-green' if attendance.status_kehadiran == 'hadir' else 'bg-red' }}">
-                                    {{ attendance.status_kehadiran|capitalize }}
-                                </span>
-                            </td>
-                            <td>{{ attendance.lokasi.replace('_', ' ') if attendance.lokasi else 'N/A' }}</td>
-                        </tr>
-                        {% endfor %}
+                            {% for attendance in attendance_history %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 500; color: var(--text-main);">
+                                        {{ attendance.waktu_absen.strftime('%d %B %Y') }}
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);" class="flex items-center gap-1 mt-1">
+                                        <i class="ph ph-clock"></i> Pukul {{ attendance.waktu_absen.strftime('%H:%M:%S') }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--primary-color);">
+                                        {{ attendance.session_ref.mata_kuliah }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge {{ 'bg-green' if attendance.status_kehadiran == 'hadir' else 'bg-red' }}" style="padding: 0.4rem 0.8rem;">
+                                        {% if attendance.status_kehadiran == 'hadir' %}
+                                            <i class="ph-bold ph-check-circle" style="margin-right: 0.3rem;"></i>
+                                        {% else %}
+                                            <i class="ph-bold ph-x-circle" style="margin-right: 0.3rem;"></i>
+                                        {% endif %}
+                                        {{ attendance.status_kehadiran|capitalize }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="flex items-center gap-1" style="font-size: 0.85rem; color: var(--text-muted); background: var(--bg-color); padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); display: inline-flex;">
+                                        <i class="ph-fill ph-map-pin"></i> 
+                                        {{ attendance.lokasi.replace('_', ' ') if attendance.lokasi else 'N/A' }}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
                         {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted" style="padding: 2rem;">Belum ada riwayat
-                                absensi.</td>
-                        </tr>
+                            <tr>
+                                <td colspan="4" class="text-center text-muted" style="padding: 4rem 1rem;">
+                                    <i class="ph-duotone ph-empty" style="font-size: 3rem; opacity: 0.5; margin-bottom: 1rem;"></i>
+                                    <p style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Tidak ada data absensi</p>
+                                    <p>Anda belum pernah melakukan absensi di sesi manapun.</p>
+                                </td>
+                            </tr>
                         {% endif %}
                     </tbody>
                 </table>

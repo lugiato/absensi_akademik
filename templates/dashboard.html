@@ -5,113 +5,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Mahasiswa - Sistem Absensi</title>
-    <link rel="stylesheet" href="../static/css/style.css">
-    <style>
-        /* Tambahan CSS khusus Dashboard */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 2rem;
-        }
-
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 2rem;
-        }
-
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th,
-        td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f9fafb;
-            font-weight: 600;
-        }
-
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .bg-green {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .bg-red {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-
-        @media (max-width: 768px) {
-            .grid-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
-    <div class="container">
-        <div class="navbar">
-            <h2>Portal Akademik</h2>
-            <div>
-                <span style="margin-right: 1rem;">Halo, <strong>{{ current_user.nama | default('Mahasiswa')
-                        }}</strong></span>
-                <a href="/logout" class="btn btn-outline" style="padding: 0.5rem 1rem; width: auto;">Logout</a>
+    <div class="container fade-in">
+        <nav class="navbar">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-student" style="font-size: 1.75rem; color: var(--primary-color);"></i>
+                <h2>Portal Akademik</h2>
             </div>
-        </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div style="width: 36px; height: 36px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-weight: bold;">
+                        {{ current_user.nama[0]|upper if current_user.nama else 'M' }}
+                    </div>
+                    <span class="hidden" style="display: block;">
+                        Halo, <strong>{{ current_user.nama | default('Mahasiswa') }}</strong>
+                    </span>
+                </div>
+                <a href="/logout" class="btn btn-outline btn-sm">
+                    <i class="ph-bold ph-sign-out"></i> Logout
+                </a>
+            </div>
+        </nav>
 
         <div class="grid-layout">
-            <div class="card" style="max-width: 100%;">
-                <h3 class="card-title" style="text-align: left;">Sesi Saat Ini</h3>
-                <p class="card-subtitle" style="text-align: left;">Sesi absensi yang sedang berjalan</p>
+            <!-- Kiri: Status Sesi -->
+            <div class="card full-width" style="align-self: start;">
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="ph-fill ph-clock-countdown" style="font-size: 1.5rem; color: var(--secondary-color);"></i>
+                    <h3 class="card-title" style="margin: 0;">Sesi Saat Ini</h3>
+                </div>
+                <p class="card-subtitle">Sesi absensi yang sedang berjalan</p>
 
                 {% if active_session %}
-                <div
-                    style="background-color: #eff6ff; border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
-                    <h4 style="margin-bottom: 0.5rem;">{{ active_session.mata_kuliah }}</h4>
-                    <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 0.5rem;">Mode:
-                        <strong>{{ active_session.mode|capitalize }}</strong> | Waktu: {{
-                        active_session.jam_mulai.strftime('%H:%M') }} - {{ active_session.jam_selesai.strftime('%H:%M')
-                        }} WIB
-                    </p>
-                    <a href="/attendance" class="btn btn-primary" style="margin-top: 0.5rem;">Mulai Absensi</a>
+                <div class="status-widget fade-in">
+                    <h4 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">
+                        {{ active_session.mata_kuliah }}
+                    </h4>
+                    <div class="flex items-center gap-4 text-muted mb-4" style="font-size: 0.9rem;">
+                        <span class="flex items-center gap-1"><i class="ph-bold ph-broadcast"></i> {{ active_session.mode|capitalize }}</span>
+                        <span class="flex items-center gap-1"><i class="ph-bold ph-clock"></i> {{ active_session.jam_mulai.strftime('%H:%M') }} - {{ active_session.jam_selesai.strftime('%H:%M') }}</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between mt-6">
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--primary-color);" class="flex items-center">
+                            <span class="status-indicator"></span> Sedang Berjalan
+                        </span>
+                        <a href="/attendance" class="btn btn-primary btn-auto btn-sm">
+                            Hadir Sekarang <i class="ph-bold ph-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
                 {% else %}
-                <div
-                    style="background-color: #f8fafc; border-left: 4px solid #94a3b8; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
-                    <p class="text-muted" style="font-size: 0.95rem; margin-bottom: 0.5rem;">Tidak ada sesi absensi
-                        aktif saat ini.</p>
-                    <a href="/attendance" class="btn btn-outline" style="margin-top: 0.5rem;">Cek Absensi</a>
+                <div style="background: rgba(241, 245, 249, 0.7); border: 2px dashed var(--border-color); padding: 2rem; border-radius: var(--radius-lg); text-align: center; margin-top: 1rem;">
+                    <i class="ph-duotone ph-coffee" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                    <p style="font-weight: 500; color: var(--text-main);">Tidak ada sesi kelas saat ini.</p>
+                    <p class="text-muted" style="font-size: 0.875rem; margin-bottom: 1rem;">Bisa istirahat dulu atau cek jadwal Anda.</p>
+                    <a href="/attendance" class="btn btn-outline btn-sm btn-auto">Cek Manual Absensi</a>
                 </div>
                 {% endif %}
-
             </div>
 
-            <div class="card" style="max-width: 100%;">
-                <h3 class="card-title" style="text-align: left;">Riwayat Kehadiran</h3>
-                <p class="card-subtitle" style="text-align: left;">Rekap absensi terbaru</p>
+            <!-- Kanan: Riwayat -->
+            <div class="card full-width">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="ph-fill ph-calendar-check" style="font-size: 1.5rem; color: var(--success-color);"></i>
+                        <h3 class="card-title" style="margin: 0;">Riwayat Kehadiran</h3>
+                    </div>
+                    <a href="/attendance/history" class="btn btn-outline btn-sm btn-auto" style="border: none; background: var(--bg-color);">
+                        Lihat Semua <i class="ph-bold ph-caret-right"></i>
+                    </a>
+                </div>
+                <p class="card-subtitle">Rekap absensi terbaru Anda</p>
 
                 <div class="table-responsive">
                     <table>
@@ -124,27 +93,38 @@
                         </thead>
                         <tbody>
                             {% if attendance_history %}
-                            {% for attendance in attendance_history %}
-                            <tr>
-                                <td>{{ attendance.waktu_absen.strftime('%d %B %Y') }}</td>
-                                <td>{{ attendance.session_ref.mata_kuliah }}</td>
-                                <td>
-                                    <span
-                                        class="badge {{ 'bg-green' if attendance.status_kehadiran == 'hadir' else 'bg-red' }}">
-                                        {{ attendance.status_kehadiran|capitalize }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
+                                {% for attendance in attendance_history %}
+                                <tr>
+                                    <td style="font-size: 0.9rem;">
+                                        <div class="flex items-center gap-2">
+                                            <i class="ph ph-calendar-blank text-muted"></i>
+                                            {{ attendance.waktu_absen.strftime('%d %b %Y') }}
+                                        </div>
+                                    </td>
+                                    <td style="font-weight: 500;">{{ attendance.session_ref.mata_kuliah }}</td>
+                                    <td>
+                                        <span class="badge {{ 'bg-green' if attendance.status_kehadiran == 'hadir' else 'bg-red' }}">
+                                            {% if attendance.status_kehadiran == 'hadir' %}
+                                                <i class="ph-bold ph-check" style="margin-right: 0.25rem;"></i>
+                                            {% else %}
+                                                <i class="ph-bold ph-x" style="margin-right: 0.25rem;"></i>
+                                            {% endif %}
+                                            {{ attendance.status_kehadiran|capitalize }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             {% else %}
-                            <tr>
-                                <td colspan="3" class="text-center text-muted">Belum ada riwayat kehadiran.</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted" style="padding: 2rem;">
+                                        <i class="ph-duotone ph-folder-open" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                        <br>Belum ada riwayat kehadiran dicatat.
+                                    </td>
+                                </tr>
                             {% endif %}
                         </tbody>
                     </table>
                 </div>
-                <a href="/attendance/history" class="btn btn-outline mt-4">Lihat Semua Riwayat</a>
             </div>
         </div>
     </div>
