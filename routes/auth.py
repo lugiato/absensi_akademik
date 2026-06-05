@@ -47,6 +47,40 @@ def dashboard():
     attendance_history = Attendance.query.filter_by(user_id=user.id).order_by(Attendance.waktu_absen.desc()).limit(5).all()
     return render_template('dashboard.html', active_session=active_session, attendance_history=attendance_history)
 
+@auth_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    user = User.query.get_or_404(current_user.get_id())
+    
+    if request.method == 'POST':
+        nama = request.form.get('nama')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Check if email is being changed and if it already exists
+        if email != user.email:
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash("Email tersebut sudah digunakan oleh pengguna lain.", "danger")
+                return redirect(url_for('auth.profile'))
+                
+        user.nama = nama
+        user.email = email
+        
+        if password:
+            user.password_hash = generate_password_hash(password)
+            
+        try:
+            db.session.commit()
+            flash("Profil berhasil diperbarui!", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash("Terjadi kesalahan saat memperbarui profil.", "danger")
+            
+        return redirect(url_for('auth.profile'))
+        
+    return render_template('profile.html', user=user)
+
 @auth_bp.route('/logout')
 @login_required
 def logout():
