@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False) # 'mahasiswa' atau 'dosen'
     device_id = db.Column(db.String(100), nullable=True)
+    profile_picture = db.Column(db.String(255), nullable=True, default='default.png')
 
     # Relasi 1-ke-Banyak (1 User -> Banyak Attendance)
     attendances = db.relationship('Attendance', backref='user', lazy=True)

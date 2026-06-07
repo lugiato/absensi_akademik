@@ -39,8 +39,14 @@
         <div class="center-layout" style="min-height: auto; padding: 0;">
             <div class="card" style="max-width: 500px; width: 100%;">
                 <div class="text-center mb-6">
-                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, var(--primary-light), var(--bg-color)); border: 2px solid var(--primary-color); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--primary-color); font-weight: bold; font-size: 2.5rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
-                        {{ user.nama[0]|upper if user.nama else 'U' }}
+                    <div style="width: 100px; height: 100px; margin: 0 auto 1rem auto; position: relative;">
+                        {% if user.profile_picture and user.profile_picture != 'default.png' %}
+                            <img src="{{ url_for('static', filename='uploads/profiles/' + user.profile_picture) }}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; border: 2px solid var(--primary-color); box-shadow: var(--shadow-sm);">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--primary-light), var(--bg-color)); border: 2px solid var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-weight: bold; font-size: 2.5rem; box-shadow: var(--shadow-sm);">
+                                {{ user.nama[0]|upper if user.nama else 'U' }}
+                            </div>
+                        {% endif %}
                     </div>
                     <h3 class="card-title" style="margin-bottom: 0.25rem;">{{ user.nama }}</h3>
                     <p class="card-subtitle" style="margin-bottom: 0.5rem;">
@@ -50,7 +56,7 @@
                     </p>
                 </div>
 
-                <form action="/profile" method="POST">
+                <form action="/profile" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label class="form-label" for="nama">Nama Lengkap</label>
                         <div style="position: relative;">
@@ -74,6 +80,15 @@
                             <input type="password" id="password" name="password" class="form-control" placeholder="Kosongkan jika tidak ingin mengubah" style="padding-left: 2.75rem;">
                         </div>
                         <small class="text-muted" style="display: block; margin-top: 0.25rem;">Hanya isi jika Anda ingin mengganti password Anda.</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="profile_picture">Foto Profil (Opsional)</label>
+                        <div style="position: relative;">
+                            <i class="ph ph-image" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.25rem;"></i>
+                            <input type="file" id="profile_picture" name="profile_picture" class="form-control" accept="image/*" style="padding-left: 2.75rem; padding-top: 0.5rem;">
+                        </div>
+                        <small class="text-muted" style="display: block; margin-top: 0.25rem;">Format didukung: JPG, PNG, GIF.</small>
                     </div>
 
                     <button type="submit" class="btn btn-primary mt-4">

@@ -56,6 +56,7 @@ def profile():
         nama = request.form.get('nama')
         email = request.form.get('email')
         password = request.form.get('password')
+        profile_picture = request.files.get('profile_picture')
         
         # Check if email is being changed and if it already exists
         if email != user.email:
@@ -69,6 +70,25 @@ def profile():
         
         if password:
             user.password_hash = generate_password_hash(password)
+            
+        if profile_picture and profile_picture.filename != '':
+            import os
+            import uuid
+            from werkzeug.utils import secure_filename
+            
+            filename = secure_filename(profile_picture.filename)
+            ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'png'
+            unique_filename = f"{uuid.uuid4().hex}.{ext}"
+            
+            # Using absolute path starting from app static folder or relative
+            # It's better to use current working directory or app root path, assuming the script runs from root
+            upload_folder = os.path.join('static', 'uploads', 'profiles')
+            os.makedirs(upload_folder, exist_ok=True)
+            
+            filepath = os.path.join(upload_folder, unique_filename)
+            profile_picture.save(filepath)
+            
+            user.profile_picture = unique_filename
             
         try:
             db.session.commit()
