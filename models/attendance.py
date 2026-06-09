@@ -4,14 +4,22 @@ from . import db
 
 class Attendance(db.Model):
     __tablename__ = 'attendance'
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'session_id', name='uq_user_session'),
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     session_id = db.Column(db.Integer, db.ForeignKey('sessions.id'), nullable=False)
     
-    waktu_absen = db.Column(db.DateTime, default=datetime.now)
-    status_kehadiran = db.Column(db.String(20), nullable=False) # 'hadir', 'terlambat', 'izin', 'alpha'
-    lokasi = db.Column(db.Text, nullable=True) # Untuk menyimpan log koordinat saat absen
+    waktu_absen = db.Column(db.DateTime, default=datetime.utcnow)
+    status_kehadiran = db.Column(db.String(20), nullable=False)  # 'hadir', 'terlambat', 'izin', 'alpha'
+    lokasi = db.Column(db.Text, nullable=True)  # Log koordinat saat absen
+    
+    # Audit trail
+    metode_absen = db.Column(db.String(30), nullable=True)  # 'offline_gps', 'online_upload', 'webcam_scan'
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.String(300), nullable=True)
 
     def __repr__(self):
         return f"<Attendance UserID:{self.user_id} - SesiID:{self.session_id}>"

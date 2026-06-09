@@ -17,14 +17,18 @@
                 <h2>Portal Akademik</h2>
             </div>
             <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2">
-                    <div style="width: 36px; height: 36px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-weight: bold;">
-                        {{ current_user.nama[0]|upper if current_user.nama else 'M' }}
+                <a href="/profile" class="flex items-center gap-2" style="text-decoration: none; color: inherit; padding: 0.25rem; border-radius: var(--radius-md); transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='rgba(0,0,0,0.05)'" onmouseout="this.style.backgroundColor='transparent'">
+                    <div style="width: 36px; height: 36px; background: var(--primary-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-weight: bold; overflow: hidden;">
+                        {% if current_user.profile_picture and current_user.profile_picture != 'default.png' %}
+                            <img src="{{ url_for('static', filename='uploads/profiles/' + current_user.profile_picture) }}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            {{ current_user.nama[0]|upper if current_user.nama else 'M' }}
+                        {% endif %}
                     </div>
                     <span class="hidden" style="display: block;">
                         Halo, <strong>{{ current_user.nama | default('Mahasiswa') }}</strong>
                     </span>
-                </div>
+                </a>
                 <a href="/logout" class="btn btn-outline btn-sm">
                     <i class="ph-bold ph-sign-out"></i> Logout
                 </a>
